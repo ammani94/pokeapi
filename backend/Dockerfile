@@ -1,16 +1,17 @@
-# backend/Dockerfile
-# Utilise une image multi-architecture pour Apple Silicon et Intel
 FROM --platform=linux/amd64 node:22-alpine
 
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S -u 1001 -G nodejs nodejs && \
+    mkdir -p /app && \
+    chown nodejs:nodejs /app
+
 WORKDIR /app
+USER root
+COPY --chown=nodejs:nodejs package*.json ./
+RUN npm install --omit=dev --no-optional
 
-# Copie d'abord package.json et package-lock.json pour tirer parti du cache
-COPY package*.json ./
-# Installe les dépendances (y compris devDependencies pour le développement)
-RUN npm install
+USER nodejs
+COPY --chown=nodejs:nodejs . .
 
-# Copie le reste de l'application
-COPY . .
-
-# Utilise nodemon en développement, node en production
+EXPOSE 3000
 CMD ["npm", "run", "dev"]
