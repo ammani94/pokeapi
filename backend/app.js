@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const User = require('./models/User');
+const Pokemons = require('./models/Pokemons');
 dotenv.config();
 const session = require('express-session');
 
@@ -11,6 +12,8 @@ const cors = require('cors');
 app.use(cors({
   origin: 'http://localhost:5173',
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
 app.use(session({
@@ -74,9 +77,12 @@ app.post('/signin', async (req, res) => {
     if (!isMatched) {
       return res.status(401).json({ message: 'Connexion échouée', success: false });
     }
-
+    res.setHeader('Content-Type', 'text/html')
     req.session.userId = user._id;
     req.session.email = user.email;
+    req.session.save(function (err) {
+      
+    })
     res.status(200).json({ message: 'Connexion réussie', success: true });
 
   } catch (err) {
@@ -105,6 +111,23 @@ app.post('/session', async (req, res) => {
   } catch (err) {
     console.error('Erreur :', err);
     res.status(500).json({ message: 'Erreur lors de la récupération des données' });
+  }
+});
+
+app.post('/catch', async (req, res) => {
+  try {
+        const { api_id, name } = req.body;
+        let user_id = req.session.email
+        let currendate = new Date()
+        let captured_at = currendate.toLocaleDateString()
+        const newPokemon = new Pokemons({ api_id, user_id, captured_at });
+        await newPokemon.save();
+        res.status(201).json({
+          message: 'Pokémon ajouté'
+        });
+  } catch (err) {
+    console.error('Erreur :', err);
+    res.status(500).json({ message: 'Erreur lors de l\'ajout du pokemon' });
   }
 });
 

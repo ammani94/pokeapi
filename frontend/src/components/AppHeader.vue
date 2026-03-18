@@ -39,7 +39,6 @@ const user = async () => {
     })
     if (response.data.success) {
       userAccount.value = response.data.user
-      console.log(userAccount.value)
     } else {
       router.push({name: 'signin'})
     }

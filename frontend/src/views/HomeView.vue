@@ -72,7 +72,7 @@ export default {
         this.formData.api_id = listPokemon.id
         this.formData.name = listPokemon.name
         const response = await axios.post(
-          'http://localhost:8080/catch',
+          'http://localhost:3000/catch',
           this.formData,
           {
             withCredentials: true,

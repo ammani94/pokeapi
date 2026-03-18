@@ -1,10 +1,10 @@
 <template>
   <div class="authentification">
     <form @submit.prevent="submitForm">
-    <input v-model="formData.email" placeholder="email" required />
-    <input v-model="formData.password" type="password" placeholder="Mot de passe" required />
-    <button @click="() => submitForm()">Se connecter</button>
-  </form>
+      <input v-model="formData.email" placeholder="email" required />
+      <input v-model="formData.password" type="password" placeholder="Mot de passe" required />
+      <button @click="() => submitForm()">Se connecter</button>
+    </form>
   </div>
   <div class="signup">
     <router-link to="/signup">Créer un compte</router-link>
@@ -25,7 +25,10 @@ export default {
     const router = useRouter()
 
     const submitForm = async () => {
-        const response = await axios.post('http://localhost:3000/signin', formData.value)
+        const response = await axios.post('http://localhost:3000/signin', formData.value, {
+          withCredentials: true
+        })
+        console.log('Réponse de /signin:', response.headers)
         if (response.data.success) {
           router.push({name: 'home'})
         } else {
