@@ -11,36 +11,30 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, toRaw } from 'vue'
 import { useRouter } from 'vue-router'
+import { useAppStore } from '../stores/user'
 import axios from 'axios'
-export default {
-  setup() {
-    const formData = ref({
+const router = useRouter()
+const store = useAppStore()
+const formData = ref({
         email: '',
         password: ''
     })
-
-    const router = useRouter()
-
     const submitForm = async () => {
         const response = await axios.post('http://localhost:3000/signin', formData.value, {
           withCredentials: true
         })
-        console.log('Réponse de /signin:', response.headers)
         if (response.data.success) {
+          store.setUserSession({
+            email: response.data.user.email,
+            userId: response.data.user.userId,
+          })
           router.push({name: 'home'})
         } else {
           alert(result.data.message)
         }
     }
-
-    return {
-      formData,
-      submitForm
-    }
-  }
-}
 </script>
 

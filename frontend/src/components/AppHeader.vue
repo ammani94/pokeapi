@@ -18,16 +18,17 @@
 </template>
 
 <script setup>
-import { ref, toRaw, onMounted } from 'vue'
+import { ref, toRaw, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
+import { useAppStore } from '../stores/user'
 const router = useRouter()
+const store = useAppStore()
 const title = "Pokedex"
 let PokemonInfo = ref([])
 const navLinks = [
-  { path: "/", text: "Accueil"},
-  { path: "/", text: "Contact" },
-  { path: "/", text: "Capturés"},
+  { path: "/home", text: "Accueil"},
+  { path: "/captured", text: "Capturés"},
 ]
 
 let userAccount = ref([])
@@ -37,7 +38,7 @@ const user = async () => {
     const response = await axios.post('http://localhost:3000/session', {}, {
       withCredentials: true
     })
-    if (response.data.success) {
+    if (store.userSession.email) {
       userAccount.value = response.data.user
     } else {
       router.push({name: 'signin'})

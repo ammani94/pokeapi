@@ -25,6 +25,8 @@
 <script>
 import axios from 'axios'
 import { ref, toRaw, onMounted } from 'vue'
+import { useAppStore } from '../stores/user'
+let store = useAppStore()
 let url = 'https://pokeapi.co/api/v2/pokemon/'
 export default {
   data() {
@@ -71,6 +73,7 @@ export default {
       try {
         this.formData.api_id = listPokemon.id
         this.formData.name = listPokemon.name
+        this.formData.userId = store.userSession.email
         const response = await axios.post(
           'http://localhost:3000/catch',
           this.formData,

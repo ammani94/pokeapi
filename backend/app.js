@@ -22,6 +22,8 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     secure: false,
+    httpOnly: true,
+    sameSite: 'lax',
     maxAge: 24 * 60 * 60 * 1000
   }
 }));
@@ -70,20 +72,23 @@ app.post('/signin', async (req, res) => {
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(401).json({ message: 'Connexion échouée', success: false });
+      return res.status(200).json({ message: 'Connexion échouée', success: false });
     }
 
     const isMatched = await user.comparePassword(password);
     if (!isMatched) {
-      return res.status(401).json({ message: 'Connexion échouée', success: false });
+      return res.status(200).json({ message: 'Connexion échouée', success: false });
     }
     res.setHeader('Content-Type', 'text/html')
     req.session.userId = user._id;
     req.session.email = user.email;
     req.session.save(function (err) {
-      
+      if (err) {
+        console.error('Erreur lors de la sauvegarde de la session :', err);
+        return res.status(500).json({ message: 'Erreur serveur' });
+      }
+      res.status(200).json({ message: 'Connexion réussie', success: true, user:req.session });
     })
-    res.status(200).json({ message: 'Connexion réussie', success: true });
 
   } catch (err) {
     console.error('Erreur lors de la connexion :', err);
@@ -104,7 +109,7 @@ app.post('/logout', async (req, res) => {
 app.post('/session', async (req, res) => {
   try {
       if (!req.session.userId) {
-        res.status(401).json({ success: false, message: 'Erreur lors de la récupération des données' });
+        res.status(200).json({ success: false, message: 'Erreur lors de la récupération des données' });
       }
       res.status(201).json({ success: true, user: req.session });
 
@@ -116,16 +121,49 @@ app.post('/session', async (req, res) => {
 
 app.post('/catch', async (req, res) => {
   try {
-        const { api_id, name } = req.body;
-        let user_id = req.session.email
+        const { api_id, name, userId } = req.body;
         let currendate = new Date()
+        const user_id = userId
         let captured_at = currendate.toLocaleDateString()
         const newPokemon = new Pokemons({ api_id, user_id, captured_at });
         await newPokemon.save();
         res.status(201).json({
+          success: true,
           message: 'Pokémon ajouté'
         });
   } catch (err) {
+    console.error('Erreur :', err);
+    res.status(500).json({ message: 'Erreur lors de l\'ajout du pokemon' });
+  }
+});
+
+
+app.post('/fetch', async (req, res) => {
+  try {
+        let userId = req.body.user_id
+        const PokemonsCaught = await Pokemons.find({ user_id : userId })
+        res.status(201).json({
+          success: true,
+          results: PokemonsCaught
+        });
+      } catch (err) {
+    console.error('Erreur :', err);
+    res.status(500).json({ message: 'Erreur lors de l\'ajout du pokemon' });
+  }
+});
+
+
+app.post('/free/:pokemon_id', async (req, res) => {
+  try {
+        let userId = req.body.user_id
+        const pokemon_id = req.params.pokemon_id;
+        await Pokemons.findByIdAndDelete(pokemon_id);
+        const PokemonsCaught = await Pokemons.find({ user_id : userId })
+        res.status(201).json({
+          success: true,
+          results: PokemonsCaught
+        });
+      } catch (err) {
     console.error('Erreur :', err);
     res.status(500).json({ message: 'Erreur lors de l\'ajout du pokemon' });
   }
