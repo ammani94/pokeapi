@@ -1,12 +1,16 @@
 <template>
-  <div> 
-      <div class="pokemon-card" v-for="pokemon in pokemons" :key="pokemon.name">
-        <h2>{{ pokemon.name }} (ID: {{ pokemon.id }})</h2>
-        <img :src="pokemon.sprites.front_default" :alt="pokemon.name" />
-        <p>Types: {{ pokemon.types.map(t => t.type.name).join(', ') }}</p>
-        <p>Poids: {{ pokemon.weight / 10 }} kg</p>
-        <p>Taille: {{ pokemon.height / 10 }} m</p>
-        <button @click="() => freePokemons(pokemon.id_pokemon)"> Libérer</button>
+  <div>
+    <div v-if="loading">Chargement en cours...</div>
+    <div v-if="error" class="error">{{ error }}</div>
+    <div v-if="listPokemon" class="container element" >
+      <div class="pokemon-card" v-for="listPokemons in pokemons" :key="listPokemons.name">
+        <h2>{{ listPokemons.name }} (ID: {{ listPokemons.id }})</h2>
+        <img :src="listPokemons.sprites.front_default" :alt="listPokemons.name" />
+        <p>Types: {{ listPokemons.types.map(t => t.type.name).join(', ') }}</p>
+        <p>Poids: {{ listPokemons.weight / 10 }} kg</p>
+        <p>Taille: {{ listPokemons.height / 10 }} m</p>
+        <button @click="() => freePokemons(listPokemons.id_pokemon)"> Capturer</button>
+      </div>
     </div>
   </div>
 </template>
@@ -34,9 +38,9 @@ const fetchPokemons = async() => {
         }, {
           withCredentials: true
         })
-        listPokemon = response.data.results
+        listPokemon.value = response.data.results
         const pokemonDetails = await Promise.all(
-          listPokemon.map(async (pokemon) => {
+          listPokemon.value.map(async (pokemon) => {
             const pokemonResponse = await axios.get('https://pokeapi.co/api/v2/pokemon/'+pokemon.api_id)
             return {
                 ...pokemonResponse.data,
@@ -44,7 +48,7 @@ const fetchPokemons = async() => {
             }
           })
         )
-        pokemons = pokemonDetails
+        pokemons.value = pokemonDetails
       } catch (err) {
         console.error("Erreur lors de la récupération:", err)
         error = "Impossible de charger les données."
@@ -61,9 +65,9 @@ const fetchPokemons = async() => {
         }, {
           withCredentials: true
         })
-        listPokemon = response.data.results
+        listPokemon.value = response.data.results
         const pokemonDetails = await Promise.all(
-          listPokemon.map(async (pokemon) => {
+          listPokemon.value.map(async (pokemon) => {
             const pokemonResponse = await axios.get('https://pokeapi.co/api/v2/pokemon/'+pokemon.api_id)
             return {
                 ...pokemonResponse.data,
@@ -71,7 +75,7 @@ const fetchPokemons = async() => {
             }
           })
         )
-        pokemons = pokemonDetails
+        pokemons.value = pokemonDetails
       } catch (err) {
         console.error("Erreur lors de la récupération:", err)
         error = "Impossible de charger les données."
