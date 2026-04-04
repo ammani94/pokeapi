@@ -1,4 +1,9 @@
 <template>
+
+  <form @submit.prevent="submitForm">
+    <input v-model="search.name" placeholder="Rechercher..." required />
+    <button @click="() => submitForm()">Rechercher</button>
+  </form>
   <div>
     <div v-if="loading">Chargement en cours...</div>
     <div v-if="error" class="error">{{ error }}</div>
@@ -26,12 +31,12 @@
 import axios from 'axios'
 import { ref, toRaw, onMounted } from 'vue'
 import { useAppStore } from '../stores/user'
-let store = useAppStore()
-let url = 'https://pokeapi.co/api/v2/pokemon/'
+let store = useAppStore() 
 export default {
   data() {
     return {
       pokemons: null,
+      url: 'https://pokeapi.co/api/v2/pokemon/',
       listPokemon: null,
       next: null,
       previous: null,
@@ -40,18 +45,21 @@ export default {
       formData: {
         api_id: '',
         name: ''
+      },
+      search: {
+        name: ''
       }
     }
   },
   async mounted() {
-    await this.fetchPokemons(url)
+    await this.fetchPokemons()
   },
   methods: {
-    async fetchPokemons(url) {
+    async fetchPokemons() {
       this.loading = true
       this.error = null
       try {
-        const response = await axios.get(url)
+        const response = await axios.get(this.url)
         this.listPokemon = response.data.results
         this.next = response.data.next
         this.previous = response.data.previous
@@ -73,7 +81,9 @@ export default {
       try {
         this.formData.api_id = listPokemon.id
         this.formData.name = listPokemon.name
-        this.formData.userId = store.userSession.email
+        if (store.userSession.email !== undefined) {
+          this.formData.userId = store.userSession.email
+        }
         const response = await axios.post(
           'http://localhost:3000/catch',
           this.formData,
@@ -89,6 +99,20 @@ export default {
         console.error("Erreur :", error)
       }
     },
+
+    async submitForm() {
+      try {
+        const response = await axios.get(this.url+this.search.name)
+        this.listPokemon = response.data
+        this.pokemons = [this.listPokemon]
+      } catch (err) {
+        console.error("Erreur lors de la récupération:", err)
+        this.error = "Pokémon non trouvé"
+        this.searchData.name = ''
+      } finally {
+        this.loading = false
+      }
+    }
   },
 };
 </script>
