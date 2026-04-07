@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const User = require('./models/User');
 const Pokemons = require('./models/Pokemons');
+const Teams = require('./models/Teams');
 dotenv.config();
 const session = require('express-session');
 
@@ -165,7 +166,22 @@ app.post('/free/:pokemon_id', async (req, res) => {
         });
       } catch (err) {
     console.error('Erreur :', err);
-    res.status(500).json({ message: 'Erreur lors de l\'ajout du pokemon' });
+    res.status(500).json({ message: 'Erreur lors de la suppression du pokemon' });
+  }
+});
+
+app.post('/create_team', async (req, res) => {
+  try {
+        const { name, user_id } = req.body;
+        const newTeam = new Teams({ name, user_id });
+        await newTeam.save(); 
+        res.status(201).json({
+          success: true,
+          message: 'Équipe créee'
+        });
+      } catch (err) {
+    console.error('Erreur :', err);
+    res.status(500).json({ message: 'Erreur lors de la création de l\'équipe' });
   }
 });
 
