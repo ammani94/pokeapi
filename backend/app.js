@@ -185,4 +185,19 @@ app.post('/create_team', async (req, res) => {
   }
 });
 
+app.post('/fetchTeams', async (req, res) => {
+  try {
+        let userId = req.body.user_id
+        const teams = await Teams.find({ user_id : userId })
+        console.log(teams)
+        res.status(201).json({
+          success: true,
+          results: teams
+        });
+      } catch (err) {
+    console.error('Erreur :', err);
+    res.status(500).json({ message: 'Erreur lors de la création de l\'équipe' });
+  }
+});
+
 module.exports = app;

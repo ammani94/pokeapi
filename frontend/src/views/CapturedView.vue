@@ -4,6 +4,13 @@
     <Popup v-model="isPopupOpen">
       <TeamView @team-created="handleTeamCreated" />
     </Popup>
+
+    <div>
+      <select>
+        <option v-for="team in teams" :key="team.name">{{ team.name }}</option>
+      </select>
+    </div>
+    
     <div v-if="loading">Chargement en cours...</div>
     <div v-if="error" class="error">{{ error }}</div>
     <div v-if="listPokemon" class="container element" >
@@ -30,6 +37,7 @@ let store = useAppStore()
 let isPopupOpen = ref(false)
 let pokemons = ref(null)
 let listPokemon = ref(null)
+let teams = ref(null)
 let loading = ref(null)
 let error = ref(null)
 let formData = ref({
@@ -90,79 +98,17 @@ const fetchPokemons = async() => {
         loading = false
       }
     }
-    onMounted(fetchPokemons)
 
-/*
-<script>
-import axios from 'axios'
-import Popup from './Popup.vue'
-import TeamView from './TeamView.vue'
-import { ref, toRaw, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-//import { useAppStore } from '../stores/user'
-//let store = useAppStore()
-export default {
-  components: {
-    Popup, TeamView
-  }, 
-  setup() {
-    let isPopupOpen = ref(false)
-    
-    let pokemons = ref(null)
-    let listPokemon = ref(null)
-    let loading = ref(null)
-    let error = ref(null)
-    let formData = ref({
-        id_pokemon: ''
-      })
-
-    const fetchPokemons = async() => {
+    const fetchTeams = async() => {
       loading = true
       error = null
       try {
-        const response = await axios.post('http://localhost:3000/fetch', {
-          // user_id:store.userSession.email
-        }, {
-          withCredentials: true
-        })
-        listPokemon.value = response.data.results
-        const pokemonDetails = await Promise.all(
-          listPokemon.value.map(async (pokemon) => {
-            const pokemonResponse = await axios.get('https://pokeapi.co/api/v2/pokemon/'+pokemon.api_id)
-            return {
-                ...pokemonResponse.data,
-                id_pokemon: pokemon._id
-            }
-          })
-        )
-        pokemons.value = pokemonDetails
-      } catch (err) {
-        console.error("Erreur lors de la récupération:", err)
-        error = "Impossible de charger les données."
-      } finally {
-        loading = false
-      }
-    }
-    const freePokemons = async(id) => {
-      loading = true
-      error = null
-      try {
-        const response = await axios.post('http://localhost:3000/free/'+id, {
+        const response = await axios.post('http://localhost:3000/fetchTeams', {
           user_id:store.userSession.email
         }, {
           withCredentials: true
         })
-        listPokemon.value = response.data.results
-        const pokemonDetails = await Promise.all(
-          listPokemon.value.map(async (pokemon) => {
-            const pokemonResponse = await axios.get('https://pokeapi.co/api/v2/pokemon/'+pokemon.api_id)
-            return {
-                ...pokemonResponse.data,
-                id_pokemon: pokemon._id
-            }
-          })
-        )
-        pokemons.value = pokemonDetails
+        teams.value = response.data.results
       } catch (err) {
         console.error("Erreur lors de la récupération:", err)
         error = "Impossible de charger les données."
@@ -171,23 +117,31 @@ export default {
       }
     }
 
-    onMounted(async () => {
-      await fetchPokemons()
-    })
-
-    return {
-      isPopupOpen,
-      pokemons,
-      loading,
-      error,
-      fetchPokemons,
-      freePokemons
+    const AddPokemonToTeam = async(id_pokemon) => {
+      loading = true
+      error = null
+      try {
+        const response = await axios.post('http://localhost:3000/AddPokemonToTeam', {
+          user_id:store.userSession.email
+        }, {
+          withCredentials: true
+        })
+        teams.value = response.data.results
+      } catch (err) {
+        console.error("Erreur lors de la récupération:", err)
+        error = "Impossible de charger les données."
+      } finally {
+        loading = false
+      }
     }
-  },
-};
-*/
 
+    const handleTeamCreated = () => {
+      isPopupOpen.value = false
+      fetchTeams()
+    }
 
+    onMounted(fetchPokemons)
+    onMounted(fetchTeams)
 </script>
 
 <style scoped>
