@@ -142,7 +142,22 @@ app.post('/catch', async (req, res) => {
 app.post('/fetch', async (req, res) => {
   try {
         let userId = req.body.user_id
-        const PokemonsCaught = await Pokemons.find({ user_id : userId })
+        const PokemonsCaught = await Pokemons.find({ user_id : userId, team_id : null })
+        res.status(201).json({
+          success: true,
+          results: PokemonsCaught
+        });
+      } catch (err) {
+    console.error('Erreur :', err);
+    res.status(500).json({ message: 'Erreur lors de l\'ajout du pokemon' });
+  }
+});
+
+app.post('/fetch/team/:teamId', async (req, res) => {
+  try {
+        let userId = req.body.user_id
+        const team_id  = req.params.teamId;
+        const PokemonsCaught = await Pokemons.find({ user_id : userId, team_id : team_id })
         res.status(201).json({
           success: true,
           results: PokemonsCaught
@@ -157,8 +172,11 @@ app.post('/fetch', async (req, res) => {
 app.post('/free/:pokemon_id', async (req, res) => {
   try {
         let userId = req.body.user_id
-        const pokemon_id = req.params.pokemon_id;
-        await Pokemons.findByIdAndDelete(pokemon_id);
+        const { pokemon_id } = req.params;
+        let pokemon = await Pokemons.findById(pokemon_id);
+        if (pokemon.team_id) {
+          await Teams.delete()
+        }
         const PokemonsCaught = await Pokemons.find({ user_id : userId })
         res.status(201).json({
           success: true,
@@ -189,7 +207,6 @@ app.post('/fetchTeams', async (req, res) => {
   try {
         let userId = req.body.user_id
         const teams = await Teams.find({ user_id : userId })
-        console.log(teams)
         res.status(201).json({
           success: true,
           results: teams
@@ -197,6 +214,37 @@ app.post('/fetchTeams', async (req, res) => {
       } catch (err) {
     console.error('Erreur :', err);
     res.status(500).json({ message: 'Erreur lors de la création de l\'équipe' });
+  }
+});
+
+app.post('/:teamId/pokemons/:pokemonId', async (req, res) => {
+  try {
+        const { teamId, pokemonId } = req.params;
+        let userId = req.body.user_id;
+
+        let pokemon = await Pokemons.findById(pokemonId);
+        if (!pokemon) {
+          res.status(404).json({ message: 'Pokemon non trouvé' });
+        }
+
+        if (pokemon.team_id) {
+          res.status(400).json({ message: 'Pokemon déjà dans une équipe' });
+        }
+
+        let team = await Teams.findById(teamId);
+        if (!team) {
+          res.status(404).json({ message: 'Équipe non trouvé' });
+        }
+
+        pokemon.team_id = teamId;
+        await pokemon.save();
+
+        team.pokemons.push(pokemonId);
+        await team.save();
+
+      } catch (err) {
+    console.error('Erreur :', err);
+    res.status(500).json({ message: 'Erreur serveur' });
   }
 });
 
