@@ -59,8 +59,12 @@ let formData = ref({
       })
 let idTeam = ref(null)
 
-const fetchPokemonsInTeams = async(id) => {
+const setIdTeam = async(id) => {
       idTeam.value = id;
+    }
+
+const fetchPokemonsInTeams = async(id) => {
+      setIdTeam(id)
       try {
         const response = await axios.post('http://localhost:3000/fetch/team/'+idTeam.value, {
           user_id:store.userSession.email
