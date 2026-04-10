@@ -242,6 +242,33 @@ app.post('/:teamId/pokemons/:pokemonId', async (req, res) => {
         team.pokemons.push(pokemonId);
         await team.save();
 
+        res.status(200).json({message: 'Pokémon ajouté dans l\'équipe'});
+
+      } catch (err) {
+    console.error('Erreur :', err);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
+});
+
+app.post('/pokemons/:pokemonId', async (req, res) => {
+  try {
+        const { pokemonId } = req.params;
+
+        let pokemon = await Pokemons.findById(pokemonId);
+        if (!pokemon) {
+          res.status(404).json({ message: 'Pokemon non trouvé' });
+        }
+
+        pokemon.team_id = null;
+        await pokemon.save();
+
+        let userId = req.body.user_id
+        const PokemonsCaught = await Pokemons.find({ user_id : userId, team_id : null })
+        res.status(201).json({
+          success: true,
+          results: PokemonsCaught
+        });
+
       } catch (err) {
     console.error('Erreur :', err);
     res.status(500).json({ message: 'Erreur serveur' });

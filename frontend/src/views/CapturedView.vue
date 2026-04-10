@@ -7,7 +7,7 @@
 
     <div>
       <select>
-        <option v-for="team in teams" :key="team.name" @click="() => setIdTeam(team._id)">{{ team.name }}</option>
+        <option v-for="team in teams" :key="team.name" @click="() => fetchPokemonsInTeams(team._id)">{{ team.name }}</option>
       </select>
     </div>
 
@@ -18,7 +18,7 @@
         <p>Types: {{ pokemon.types.map(t => t.type.name).join(', ') }}</p>
         <p>Poids: {{ pokemon.weight / 10 }} kg</p>
         <p>Taille: {{ pokemon.height / 10 }} m</p>
-        <button @click="() => freePokemons(pokemon.id_pokemon)"> Libérer</button>
+        <button @click="() => PokemonsOutOfTeam(pokemon.id_pokemon)"> Quitter </button>
       </div>
     </div>
     
@@ -59,7 +59,7 @@ let formData = ref({
       })
 let idTeam = ref(null)
 
-const setIdTeam = async(id) => {
+const fetchPokemonsInTeams = async(id) => {
       idTeam.value = id;
       try {
         const response = await axios.post('http://localhost:3000/fetch/team/'+idTeam.value, {
@@ -86,13 +86,26 @@ const setIdTeam = async(id) => {
       }
     }
 
+
 const addPokemonToTeam = async(pokemon_id) => {
   const response = await axios.post('http://localhost:3000/'+idTeam.value+'/pokemons/'+pokemon_id, {
           user_id:store.userSession.email
         }, {
           withCredentials: true
         })
-      
+        alert(response.data.message)
+        fetchPokemons()
+        fetchPokemonsInTeams(idTeam.value)
+    }
+
+const PokemonsOutOfTeam = async(pokemon_id) => {
+  const response = await axios.post('http://localhost:3000/pokemons/'+pokemon_id, {
+          user_id:store.userSession.email
+        }, {
+          withCredentials: true
+        })
+        fetchPokemons()
+        fetchPokemonsInTeams(idTeam.value)
     }
 
 const fetchPokemons = async() => {
@@ -161,7 +174,7 @@ const fetchPokemons = async() => {
           withCredentials: true
         })
         teams.value = response.data.results
-        setIdTeam(teams.value[0]._id)
+        fetchPokemonsInTeams(teams.value[0]._id)
       } catch (err) {
         console.error("Erreur lors de la récupération:", err)
         error = "Impossible de charger les données."
