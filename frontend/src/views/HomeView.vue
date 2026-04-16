@@ -30,9 +30,8 @@
 <script setup>
 import axios from 'axios'
 import { ref, toRaw, onMounted,inject } from 'vue'
-const pinia = inject('pinia');
 import { useAppStore } from '../stores/user'
-const store = useAppStore(pinia)
+const store = useAppStore()
 let pokemons = ref(null)
 const url = 'https://pokeapi.co/api/v2/pokemon/'
 let listPokemon = ref(null)
