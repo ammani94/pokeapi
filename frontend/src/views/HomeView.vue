@@ -31,7 +31,7 @@
 import axios from 'axios'
 import { ref, toRaw, onMounted } from 'vue'
 import { useAppStore } from '../stores/user'
-//const store = useAppStore() 
+let store = useAppStore() 
 export default {
   data() {
     return {

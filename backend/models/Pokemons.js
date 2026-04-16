@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const userSchema = new mongoose.Schema({
+const pokemonSchema = new mongoose.Schema({
   api_id: { type: String, required:true },
   user_id: { type: String, required:true },
   captured_at: { type: Date, default:Date.now },
@@ -9,6 +9,13 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-const Pokemons = mongoose.model('pokemons', userSchema);
+const Pokemons = mongoose.model('pokemons', pokemonSchema);
+
+pokemonSchema.pre('save', function(next) {
+  if (this.team_id) {
+    throw new Error('Le pokémon appartient déjà à une équipe');
+  }
+  next();
+});
 
 module.exports = Pokemons;

@@ -21,7 +21,7 @@
         <button @click="() => PokemonsOutOfTeam(pokemon.id_pokemon)"> Quitter </button>
       </div>
     </div>
-    
+    <h1>Pokémons capturés sans équipes</h1>
     <div v-if="loading">Chargement en cours...</div>
     <div v-if="error" class="error">{{ error }}</div>
     <div v-if="pokemons" class="container element" >
@@ -103,7 +103,7 @@ const addPokemonToTeam = async(pokemon_id) => {
     }
 
 const PokemonsOutOfTeam = async(pokemon_id) => {
-  const response = await axios.post('http://localhost:3000/pokemons/'+pokemon_id, {
+  const response = await axios.post('http://localhost:3000/team/'+idTeam.value+'/pokemon/'+pokemon_id, {
           user_id:store.userSession.email
         }, {
           withCredentials: true

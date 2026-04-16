@@ -236,11 +236,15 @@ app.post('/:teamId/pokemons/:pokemonId', async (req, res) => {
           res.status(404).json({ message: 'Équipe non trouvé' });
         }
 
-        pokemon.team_id = teamId;
-        await pokemon.save();
+        if (team.pokemons.length == 6) {
+          throw new Error('Une équipe ne peut contenir que 6 Pokémon maximum.');
+        }
 
         team.pokemons.push(pokemonId);
         await team.save();
+
+        pokemon.team_id = teamId;
+        await pokemon.save();
 
         res.status(200).json({message: 'Pokémon ajouté dans l\'équipe'});
 
@@ -250,17 +254,28 @@ app.post('/:teamId/pokemons/:pokemonId', async (req, res) => {
   }
 });
 
-app.post('/pokemons/:pokemonId', async (req, res) => {
+app.post('/team/:teamId/pokemon/:pokemonId', async (req, res) => {
   try {
-        const { pokemonId } = req.params;
+        const { pokemonId,teamId } = req.params;
 
         let pokemon = await Pokemons.findById(pokemonId);
         if (!pokemon) {
           res.status(404).json({ message: 'Pokemon non trouvé' });
         }
+        const pokemonObjectId = new mongoose.Types.ObjectId(pokemonId);
+
+        let team = await Teams.findById(teamId);
+        if (!team) {
+          res.status(404).json({ message: 'Équipe non trouvé' });
+        }
 
         pokemon.team_id = null;
         await pokemon.save();
+
+        const result = await Teams.updateOne(
+          { _id: teamId },
+          { $pull: { pokemons: pokemonObjectId }}
+        )
 
         let userId = req.body.user_id
         const PokemonsCaught = await Pokemons.find({ user_id : userId, team_id : null })
