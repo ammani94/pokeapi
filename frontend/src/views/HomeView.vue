@@ -96,22 +96,9 @@ const catchPokemons = async (listPokemon) => {
 
 const submitForm = async () => {
       try {
-        this.formData.api_id = listPokemon.id
-        this.formData.name = listPokemon.name
-        if (store.userSession.email !== undefined) {
-          this.formData.userId = store.userSession.email
-        }
-        const response = await axios.post(
-          'http://localhost:3000/catch',
-          this.formData,
-          {
-            withCredentials: true,
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          }
-        )
-        alert(response.data.message)
+        const response = await axios.get(url+search.value.name)
+        console.log(response.data)
+        pokemons.value = [response.data]
       } catch (error) {
         console.error("Erreur :", error)
       }
