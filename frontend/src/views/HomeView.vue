@@ -97,7 +97,6 @@ const catchPokemons = async (listPokemon) => {
 const submitForm = async () => {
       try {
         const response = await axios.get(url+search.value.name)
-        console.log(response.data)
         pokemons.value = [response.data]
       } catch (error) {
         console.error("Erreur :", error)
