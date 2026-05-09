@@ -68,17 +68,17 @@ app.post('/signin', async (req, res) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) {
-      return res.status(400).json({ message: 'Email et mot de passe requis.' });
+      return res.status(400).json({ message: 'Email et mot de passe requis.', success: false });
     }
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(200).json({ message: 'Connexion échouée', success: false });
+      return res.status(404).json({ message: 'Erreur Connexion', success: false });
     }
 
     const isMatched = await user.comparePassword(password);
     if (!isMatched) {
-      return res.status(200).json({ message: 'Connexion échouée', success: false });
+      return res.status(401).json({ message: 'Erreur Connexion', success: false });
     }
     res.setHeader('Content-Type', 'text/html')
     req.session.userId = user._id;

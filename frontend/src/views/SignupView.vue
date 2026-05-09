@@ -36,31 +36,42 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, toRaw } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
-
-export default {
-  setup() {
-    const formData = ref({
+const formData = ref({
         email: '',
         password: ''
     })
 
-    const submitForm = async () => {
-        const response = await axios.post('http://localhost:3000/register', formData.value)
-        console.log(response.data.message)
-    }
+const submitForm = async () => {
+  try {
+    const response = await axios.post(
+      'http://localhost:3000/register',
+      formData.value,
+      { withCredentials: true }
+    );
 
-    return {
-      formData,
-      submitForm
+    if (response.data.success) {
+      store.setUserSession({
+        email: response.data.user.email,
+        userId: response.data.user.userId,
+      });
+      router.push({ name: 'home' });
+    }
+  } catch (error) {
+    if (error.response) {
+      alert(error.response.data.message)
+    } else if (error.request) {
+      console.error("Aucune réponse du serveur (problème réseau)");
+    } else {
+      console.error("Erreur inconnue:", error.message);
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-@import '@/assets/styles/styles';
+  @import '@/assets/styles/styles';
 </style>

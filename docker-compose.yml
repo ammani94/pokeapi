@@ -29,6 +29,28 @@ services:
     environment:
       - NODE_ENV=development
 
+  python_env:
+    platform: linux/amd64
+    user: "1000:1000"
+    build:
+      context: ./python
+      dockerfile: Dockerfile
+    container_name: python_app
+    volumes:
+      - ./python:/app
+    environment:
+      - PYTHONUNBUFFERED=1
+    ports:
+      - "8000:8000"
+    depends_on:
+      - frontend
+    networks:
+      - app-network
+    restart: unless-stopped
+    tty: true
+    stdin_open: true
+    command: bash 
+
 
   mongo:
     image: mongo:6
